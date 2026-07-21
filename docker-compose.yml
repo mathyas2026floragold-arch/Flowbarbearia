@@ -1,0 +1,18 @@
+services:
+  api:
+    build: ./backend
+    env_file: .env
+    ports: ["8080:8080"]
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    volumes: ["./backend:/app"]
+  worker:
+    build: ./backend
+    env_file: .env
+    command: python -m app.worker
+    volumes: ["./backend:/app"]
+  frontend:
+    image: node:22-alpine
+    working_dir: /site
+    volumes: ["./frontend:/site"]
+    ports: ["5173:5173"]
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"

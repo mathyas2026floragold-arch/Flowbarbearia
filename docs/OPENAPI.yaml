@@ -1,0 +1,22 @@
+openapi: 3.1.0
+info: {title: BarberFlow API, version: 1.0.0}
+servers: [{url: https://api.example.com}]
+paths:
+  /health:
+    get: {summary: Health check, responses: {'200': {description: OK}}}
+  /api/admin/barbershops:
+    post: {summary: Cria barbearia e assinatura, security: [{bearerAuth: []}], responses: {'201': {description: Criada}, '403': {description: RBAC}}}
+  /api/app/services:
+    get: {summary: Lista serviços do tenant do token, security: [{bearerAuth: []}], responses: {'200': {description: OK}}}
+    post: {summary: Cria serviço no tenant do token, security: [{bearerAuth: []}], responses: {'201': {description: Criado}}}
+  /api/app/appointments/{appointment_id}/status:
+    patch: {summary: Altera estado; conclusão manual dispara pós-atendimento, security: [{bearerAuth: []}], parameters: [{in: path, name: appointment_id, required: true, schema: {type: string, format: uuid}}], responses: {'200': {description: Atualizado}}}
+  /api/public/{slug}/availability:
+    get: {summary: Disponibilidade calculada no banco, parameters: [{in: path, name: slug, required: true, schema: {type: string}}], responses: {'200': {description: OK}}}
+  /api/public/{slug}/appointments:
+    post: {summary: Revalida e cria sem sobreposição, parameters: [{in: path, name: slug, required: true, schema: {type: string}}], responses: {'201': {description: Criado}, '409': {description: Conflito}}}
+  /api/webhooks/evolution:
+    post: {summary: Webhook HMAC e idempotente, responses: {'202': {description: Aceito}, '401': {description: Assinatura inválida}}}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
