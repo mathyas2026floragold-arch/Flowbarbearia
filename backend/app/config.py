@@ -12,6 +12,7 @@ class Settings(BaseSettings):
  evolution_api_url:str=""
  evolution_api_key:str=""
  evolution_webhook_secret:str=""
+ public_api_url:str=""
  cors_origins:str="http://localhost:5173"
  worker_poll_seconds:int=2
  max_message_attempts:int=5
