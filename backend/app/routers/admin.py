@@ -7,6 +7,24 @@ from ..schemas import BarbershopIn,PlanIn,RenewIn
 from ..services.supabase_admin import create_owner
 router=APIRouter(prefix="/api/admin",tags=["admin"])
 
+@router.get("/diagnostics/database")
+async def database_diagnostics(p:Principal=Depends(require("superadmin")),db:AsyncSession=Depends(session)):
+ try:
+  await set_scope(db,p.user_id,None,p.role)
+  row=(await db.execute(text("""select
+   current_schema() schema_name,
+   to_regclass('public.barbershops') is not null barbershops_table,
+   to_regclass('public.scheduled_messages') is not null messages_table,
+   exists(select 1 from information_schema.columns where table_schema='public' and table_name='plans' and column_name='monthly_price') plans_complete,
+   exists(select 1 from information_schema.columns where table_schema='public' and table_name='subscriptions' and column_name='monthly_value') subscriptions_complete
+  """))).mappings().one()
+  return {"status":"ok",**row}
+ except Exception as exc:
+  # Protected operational detail for the platform superadministrator.
+  original=getattr(exc,"orig",exc)
+  message=str(original).splitlines()[0][:400]
+  raise HTTPException(503,{"error_type":type(original).__name__,"message":message}) from exc
+
 @router.get("/dashboard")
 async def dashboard(p:Principal=Depends(require("superadmin")),db:AsyncSession=Depends(session)):
  await set_scope(db,p.user_id,None,p.role)
