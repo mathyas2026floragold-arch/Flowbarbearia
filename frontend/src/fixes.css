@@ -1,0 +1,4 @@
+.progress{grid-template-columns:repeat(5,1fr)}
+.mini.success{border-color:#35c98b55;color:#75e7b5}
+.mini.danger{border-color:#ef666655;color:#ff9e9e}
+.row-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:150px}

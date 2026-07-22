@@ -7,12 +7,12 @@ router=APIRouter(prefix="/api/public",tags=["public"])
 
 @router.get("/{slug}/services")
 async def services(slug:str,db:AsyncSession=Depends(session)):
- return (await db.execute(text("select s.id,s.name,s.duration_minutes,s.buffer_minutes,s.price,s.return_days from services s join barbershops b on b.id=s.barbershop_id where b.slug=:slug and b.status in ('trial','active') and s.active and s.public"),{"slug":slug})).mappings().all()
+ return (await db.execute(text("select s.id,s.name,s.duration_minutes,s.buffer_minutes,s.price,s.return_days from services s join barbershops b on b.id=s.barbershop_id where b.slug=:slug and barbershop_has_access(b.id) and s.active and s.public"),{"slug":slug})).mappings().all()
 
 @router.get("/{slug}/barbers")
 async def barbers(slug:str,service_id:str|None=None,db:AsyncSession=Depends(session)):
  return (await db.execute(text("""select distinct br.id,br.display_name from barbers br join barbershops b on b.id=br.barbershop_id
-  left join barber_services bs on bs.barber_id=br.id where b.slug=:slug and b.status in('trial','active')
+  left join barber_services bs on bs.barber_id=br.id where b.slug=:slug and barbershop_has_access(b.id)
   and br.active and br.public and (:service is null or bs.service_id=cast(:service as uuid)) order by br.display_name"""),{"slug":slug,"service":service_id})).mappings().all()
 
 @router.get("/{slug}/availability")
