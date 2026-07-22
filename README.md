@@ -36,6 +36,6 @@ Variável adicional obrigatória no backend:
 PUBLIC_API_URL=https://seu-backend.onrender.com
 ```
 
-Para uma instalação já existente, aplique também `database/migrations/004_whatsapp_connection.sql`.
+Para uma instalação já existente, aplique também `database/migrations/003_whatsapp_connection.sql`.
 
 Antes de produção, configure domínios, secrets, backups/PITR, alertas, retenção LGPD e faça o checklist em `docs/PRODUCTION_CHECKLIST.md`.
