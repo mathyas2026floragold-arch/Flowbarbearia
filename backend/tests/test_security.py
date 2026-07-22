@@ -24,3 +24,13 @@ def test_explicit_jwt_configuration_remains_supported():
  )
  assert settings.auth_issuer=="https://project.supabase.co/auth/v1"
  assert settings.auth_jwks_url.endswith("/.well-known/jwks.json")
+
+def test_database_url_is_normalized_for_asyncpg():
+ settings=Settings(database_url=(
+  "postgresql://postgres.project:secret@pooler.supabase.com:5432/postgres"
+  "?sslmode=require&schema=evolution_api"
+ ))
+ assert settings.database_url==(
+  "postgresql+asyncpg://postgres.project:secret@pooler.supabase.com:5432/postgres"
+  "?ssl=require"
+ )

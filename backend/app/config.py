@@ -1,4 +1,6 @@
 from functools import lru_cache
+from urllib.parse import parse_qsl,urlencode,urlsplit,urlunsplit
+from pydantic import field_validator
 from pydantic_settings import BaseSettings,SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -18,6 +20,23 @@ class Settings(BaseSettings):
  worker_poll_seconds:int=2
  max_message_attempts:int=5
  model_config=SettingsConfigDict(env_file=".env",extra="ignore")
+
+ @field_validator("database_url",mode="before")
+ @classmethod
+ def normalize_database_url(cls,value:str)->str:
+  """Accept Supabase/Prisma URLs and normalize them for SQLAlchemy asyncpg."""
+  url=str(value or "").strip()
+  if url.startswith("postgresql://"):
+   url="postgresql+asyncpg://"+url.removeprefix("postgresql://")
+  elif url.startswith("postgres://"):
+   url="postgresql+asyncpg://"+url.removeprefix("postgres://")
+  parts=urlsplit(url)
+  query=[]
+  for key,item in parse_qsl(parts.query,keep_blank_values=True):
+   if key=="schema":
+    continue
+   query.append(("ssl" if key=="sslmode" else key,item))
+  return urlunsplit((parts.scheme,parts.netloc,parts.path,urlencode(query),parts.fragment))
 
  @property
  def auth_issuer(self)->str:
