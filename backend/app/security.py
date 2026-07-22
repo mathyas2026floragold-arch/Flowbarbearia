@@ -19,9 +19,11 @@ class Principal:
 
 def _decode(token: str):
     settings = get_settings()
-    key = PyJWKClient(settings.supabase_jwks_url, cache_jwk_set=True, lifespan=300).get_signing_key_from_jwt(token).key
+    if not settings.auth_issuer or not settings.auth_jwks_url:
+        raise RuntimeError("Supabase Auth não configurado")
+    key = PyJWKClient(settings.auth_jwks_url, cache_jwk_set=True, lifespan=300).get_signing_key_from_jwt(token).key
     return jwt.decode(token, key, algorithms=["RS256", "ES256"], audience="authenticated",
-        issuer=settings.supabase_jwt_issuer, options={"require": ["exp", "sub"]})
+        issuer=settings.auth_issuer, options={"require": ["exp", "sub"]})
 
 
 async def principal(c: HTTPAuthorizationCredentials | None = Depends(bearer)):
